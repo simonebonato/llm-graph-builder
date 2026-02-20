@@ -37,9 +37,10 @@ def _ensure_sentence_transformer_model_downloaded(model_name: str, model_path: s
     if os.path.isdir(model_path):
         logging.info(f"Model already downloaded at: {model_path}")
         return
-    logging.info(f"Downloading model {model_name} to: {model_path}")
-    tokenizer = AutoTokenizer.from_pretrained(model_name)
-    model = AutoModel.from_pretrained(model_name)
+    repo_id = f"sentence-transformers/{model_name}" if "/" not in model_name else model_name
+    logging.info(f"Downloading model {repo_id} to: {model_path}")
+    tokenizer = AutoTokenizer.from_pretrained(repo_id)
+    model = AutoModel.from_pretrained(repo_id)
     tokenizer.save_pretrained(model_path)
     model.save_pretrained(model_path)
     logging.info("Model downloaded and saved.")
