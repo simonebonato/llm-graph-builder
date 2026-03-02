@@ -21,10 +21,15 @@ RUN apt-get update && \
 # Set LD_LIBRARY_PATH
 ENV LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH
 # Copy requirements file and install Python dependencies
-COPY requirements.txt constraints.txt /code/
+COPY requirements.txt constraints.txt constraints_mac.txt /code/
 # --no-cache-dir --upgrade 
 RUN pip install --upgrade pip
-RUN pip install -r requirements.txt -c constraints.txt
+RUN if pip install -r requirements.txt -c constraints.txt; then \
+      echo "Install OK"; \
+    else \
+      echo "Install failed; running fallback..."; \
+      pip install -r requirements.txt -c constraints_mac.txt; \
+    fi
 
 RUN python -c "from transformers import AutoTokenizer, AutoModel; \
    name='sentence-transformers/all-MiniLM-L6-v2'; \

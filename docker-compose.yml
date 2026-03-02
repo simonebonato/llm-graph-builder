@@ -1,7 +1,8 @@
-version: "3"
 
 services:
   backend:
+    depends_on:
+      - neo4j
     build:
       context: ./backend
       dockerfile: Dockerfile
@@ -30,6 +31,8 @@ services:
       - MAX_TOKEN_CHUNK_SIZE=${MAX_TOKEN_CHUNK_SIZE-}
       - GOOGLE_APPLICATION_CREDENTIALS=/root/.config/gcloud/application_default_credentials.json
       - GOOGLE_CLOUD_PROJECT=${GOOGLE_CLOUD_PROJECT-}
+      - NEO4J_URI=bolt://neo4j:7687
+      - TOKEN_TRACKER_DB_URI=bolt://neo4j:7687
     container_name: backend
     extra_hosts:
       - host.docker.internal:host-gateway
@@ -75,5 +78,23 @@ services:
     networks:
       - net
 
+  neo4j:
+    image: neo4j:latest
+    container_name: neo4j
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    environment:
+      NEO4J_AUTH: "neo4j/password"
+      NEO4JLABS_PLUGINS: '["apoc"]'
+      NEO4J_dbms_security_procedures_unrestricted: "apoc.*"
+      NEO4J_dbms_security_procedures_allowlist: "apoc.*"
+    volumes:
+      - ./neo4j_data/data:/data
+      - ./neo4j_data/logs:/logs
+      - ./neo4j_data/plugins:/plugins
+
+    networks:
+      - net
 networks:
   net:
