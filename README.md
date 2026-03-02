@@ -110,14 +110,55 @@ You have two ways to configure the embedding model locally:
 #### Using Docker-Compose
 Run the application using the default `docker-compose` configuration.
 
-1. **Supported LLM Models:**  
+1. **Create backend and frontend `.env` files**
+   ```bash
+   cp backend/example.env backend/.env
+   cp frontend/example.env frontend/.env
+   ```
+
+2. **Set required backend values in `backend/.env`**
+   - For docker-compose with the bundled Neo4j service:
+     ```bash
+     NEO4J_URI="bolt://neo4j:7687"
+     NEO4J_USERNAME="neo4j"
+     NEO4J_PASSWORD="password"
+     NEO4J_DATABASE="neo4j"
+     ```
+   - If token tracking is enabled (`TRACK_USER_USAGE=true`), set:
+     ```bash
+     TOKEN_TRACKER_DB_URI="bolt://neo4j:7687"
+     TOKEN_TRACKER_DB_USERNAME="neo4j"
+     TOKEN_TRACKER_DB_PASSWORD="password"
+     ```
+   - Set LLM provider credentials you plan to use (for example `OPENAI_API_KEY`, `DIFFBOT_API_KEY`).
+
+3. **Set frontend values in `frontend/.env`**
+   - Ensure the frontend calls backend on host:
+     ```bash
+     VITE_BACKEND_API_URL="http://localhost:8000"
+     ```
+   - Configure optional UI behavior as needed (`VITE_LLM_MODELS`, `VITE_LLM_MODELS_PROD`, `VITE_REACT_APP_SOURCES`, `VITE_GOOGLE_CLIENT_ID`).
+
+4. **Neo4j persistence volumes**
+   - Neo4j data is persisted to:
+     - `./neo4j_data/data`
+   - Neo4j logs and plugins are also persisted to:
+     - `./neo4j_data/logs`
+     - `./neo4j_data/plugins`
+
+5. **Start the stack**
+   ```bash
+   docker compose up --build
+   ```
+
+6. **Supported LLM Models**  
    By default, only OpenAI and Diffbot are enabled. Gemini requires additional GCP configurations.  
    Use the `VITE_LLM_MODELS_PROD` variable to configure the models you need. Example:
    ```bash
    VITE_LLM_MODELS_PROD="gemini_2.5_flash,openai_gpt_5_mini,diffbot,anthropic_claude_4.5_haiku"
    ```
 
-2. **Input Sources:**  
+7. **Input Sources**  
    By default, the following sources are enabled: `local`, `YouTube`, `Wikipedia`, `AWS S3`, and `web`.  
    To add Google Cloud Storage (GCS) integration, include `gcs` and your Google client ID:
    ```bash
